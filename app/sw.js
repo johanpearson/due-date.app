@@ -1,5 +1,5 @@
 // Offline cache for the app shell, plus best-effort visit reminders.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = `due-date-shell-${VERSION}`;
 const DATA = 'due-date-data';
 const FILES = [
@@ -9,6 +9,7 @@ const FILES = [
   'app.js',
   'calc.js',
   'store.js',
+  'share.js',
   'manifest.webmanifest',
   'icons/icon.svg',
   'icons/icon-192.png',

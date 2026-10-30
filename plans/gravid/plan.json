@@ -657,7 +657,8 @@
         "BR-5",
         "SR-1",
         "SR-2",
-        "BR-7"
+        "BR-7",
+        "BR-9"
       ],
       "elements": [
         {
@@ -714,6 +715,27 @@
             {
               "type": "text",
               "text": "Fungerar bäst om appen är installerad på hemskärmen. Säkrast är att lägga besöken i kalendern."
+            }
+          ]
+        },
+        {
+          "id": "share",
+          "type": "card",
+          "title": "Dela med din partner",
+          "elements": [
+            {
+              "type": "text",
+              "text": "Skicka en länk med dina datum och besök. Uppgifterna finns bara i länken."
+            },
+            {
+              "id": "share-btn",
+              "type": "button",
+              "label": "🔗 Dela länk",
+              "variant": "secondary",
+              "opens": "receive-share",
+              "satisfies": [
+                "BR-9-A"
+              ]
             }
           ]
         },
@@ -821,6 +843,47 @@
               "goto": "welcome",
               "satisfies": [
                 "BR-5-C"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "receive-share",
+      "title": "Uppdatera med delade uppgifter?",
+      "group": "Inställningar",
+      "modal": true,
+      "description": "Visas när en delad länk (#dela=…) öppnas. På en tom telefon heter den \"Lägg in delade uppgifter?\".",
+      "satisfies": [
+        "BR-9"
+      ],
+      "elements": [
+        {
+          "type": "text",
+          "text": "Sista mens sön 10 maj 2026, BF enligt ultraljud ons 10 feb 2027, 3 besök. Datumen ersätts och besöken läggs till bland dina egna.",
+          "satisfies": [
+            "BR-9-B",
+            "BR-9-C"
+          ]
+        },
+        {
+          "type": "row",
+          "elements": [
+            {
+              "type": "button",
+              "label": "Avbryt",
+              "variant": "secondary",
+              "close": true
+            },
+            {
+              "type": "button",
+              "label": "Uppdatera",
+              "variant": "primary",
+              "goto": "home",
+              "toast": "Uppdaterat: 1 nya, 0 ändrade besök",
+              "satisfies": [
+                "BR-9-C"
               ]
             }
           ]
@@ -1090,6 +1153,18 @@
       "satisfies": [
         "BR-6-A"
       ]
+    },
+    {
+      "id": "share",
+      "name": "share.js",
+      "kind": "library",
+      "description": "Kodar data till/från URL-fragmentet #dela=… och slår ihop besök per id.",
+      "depends_on": [
+        "app"
+      ],
+      "satisfies": [
+        "BR-9-D"
+      ]
     }
   ],
   "decisions": [
@@ -1177,6 +1252,38 @@
         "BR-2",
         "BR-3",
         "BR-2-C"
+      ]
+    },
+    {
+      "id": "D-share",
+      "title": "Hur partner delar data",
+      "status": "accepted",
+      "context": "Riktig synk kräver server och konto, vilket bryter mot lokal-bara data (hälsouppgifter).",
+      "options": [
+        {
+          "name": "Länk med data i #-fragmentet",
+          "pros": [
+            "Ingen server",
+            "Fungerar via sms/Messenger"
+          ],
+          "cons": [
+            "Manuell: ny länk vid ändring",
+            "Borttagna besök följer inte med"
+          ]
+        },
+        {
+          "name": "Synk via Firebase/Supabase",
+          "pros": [
+            "Automatisk"
+          ],
+          "cons": [
+            "Server, inloggning, GDPR för känsliga uppgifter"
+          ]
+        }
+      ],
+      "chosen": "Länk med data i #-fragmentet",
+      "satisfies": [
+        "BR-9"
       ]
     }
   ],
@@ -1290,6 +1397,15 @@
         "sw",
         "pages"
       ]
+    },
+    {
+      "id": "m4",
+      "title": "Dela med partner",
+      "target": "Steg 4",
+      "includes": [
+        "receive-share",
+        "share"
+      ]
     }
   ],
   "verification": [
@@ -1389,6 +1505,20 @@
         "BR-8-A",
         "BR-8-B",
         "BR-8-C"
+      ]
+    },
+    {
+      "id": "V-share",
+      "title": "Dela mellan två telefoner",
+      "type": "e2e",
+      "given": "telefon A med SM och 2 besök, tom telefon B",
+      "when": "A delar länken och B öppnar den, B lägger till ett besök och delar tillbaka",
+      "then": "B visar samma vecka; A får 3 besök och toasten \"1 nya, 0 ändrade\"; trasig länk ger felmeddelande",
+      "satisfies": [
+        "BR-9-A",
+        "BR-9-B",
+        "BR-9-C",
+        "BR-9-D"
       ]
     }
   ]

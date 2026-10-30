@@ -9,6 +9,7 @@ Allt sparas lokalt på enheten (`localStorage`). Inget konto och ingen server.
 - `app/` – hela appen (statiska filer, inget byggsteg). Det här publiceras på GitHub Pages.
   - `calc.js` – datumberäkningar (ren modul, enhetstestad)
   - `store.js` – lagring och säkerhetskopia
+  - `share.js` – dela-länk till partner (data i `#dela=…`, når aldrig servern)
   - `app.js` – gränssnitt
   - `sw.js` – offline-cache och påminnelsenotiser
 - `tests/` – enhetstester (`npm test`, kräver Node 22)
@@ -31,3 +32,7 @@ Första gången: **Settings → Pages → Build and deployment → Source: GitHu
 Riktiga push-notiser kräver en server, så appen använder:
 1. **Lägg till i kalendern** (.ics med påminnelse dagen innan) – fungerar överallt.
 2. **Notiser** (om webbläsaren stöder det) för besök idag/imorgon, när appen öppnas eller via Periodic Background Sync (Chrome på Android, installerad app). På iPhone krävs att appen är tillagd på hemskärmen.
+
+## Dela med partner
+
+Inställningar → **Dela länk** skapar en länk med datum och besök i URL-fragmentet (`#dela=…`). Fragmentet skickas aldrig till servern. När länken öppnas på den andra telefonen läggs uppgifterna in efter bekräftelse; finns det redan uppgifter ersätts datumen och besöken slås ihop. Borttagna besök följer inte med.

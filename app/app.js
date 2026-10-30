@@ -4,6 +4,7 @@ import {
   VISIT_TYPES, visitTitle, splitVisits, visitToIcs,
 } from './calc.js';
 import * as store from './store.js';
+import { SHARE_PREFIX, shareUrl, decodeShare, mergeShared } from './share.js';
 
 let data = store.load();
 const view = document.getElementById('view');
@@ -41,7 +42,9 @@ function go(page) {
   else location.hash = `#/${page}`;
 }
 
-window.addEventListener('hashchange', route);
+window.addEventListener('hashchange', () => {
+  if (!handleShareLink()) route();
+});
 
 // Re-render when the day changes or the app comes back to the foreground.
 let renderedDay = todayIso();
@@ -212,6 +215,14 @@ function renderSettings() {
     </section>
 
     <section class="card">
+      <h2 class="card-title">Dela med din partner</h2>
+      <p class="hint">Skicka en länk med dina datum och besök. När den öppnas läggs uppgifterna in i appen på den andra telefonen. Uppgifterna finns bara i länken och skickas inte via någon server. Om ni ändrar något senare delar ni en ny länk.</p>
+      <div class="actions start">
+        <button class="btn btn-soft" id="share">🔗 Dela länk</button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2 class="card-title">Säkerhetskopia</h2>
       <p class="hint">Spara en kopia av dina uppgifter som fil, till exempel om du byter telefon.</p>
       <div class="actions start">
@@ -241,6 +252,7 @@ function renderSettings() {
   const notify = view.querySelector('#notify');
   if (notify) notify.addEventListener('change', () => setNotify(notify));
 
+  view.querySelector('#share').addEventListener('click', shareLink);
   view.querySelector('#export').addEventListener('click', exportBackup);
   view.querySelector('#import').addEventListener('click', () => document.getElementById('import-file').click());
   view.querySelector('#wipe').addEventListener('click', async () => {
@@ -382,6 +394,62 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   toast('Uppgifterna är importerade');
 });
 
+// ---------- Share link ----------
+
+async function shareLink() {
+  const url = shareUrl(data, location.origin + location.pathname);
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Due date', text: 'Här är våra datum och besök i Due date:', url });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Länken är kopierad');
+  } catch {
+    window.prompt('Kopiera länken:', url);
+  }
+}
+
+// Returns true when the URL is a share link; it is then handled asynchronously.
+function handleShareLink() {
+  if (!location.hash.startsWith(SHARE_PREFIX)) return false;
+  receiveShare(location.hash.slice(SHARE_PREFIX.length));
+  return true;
+}
+
+async function receiveShare(token) {
+  // Drop the data from the address bar so a reload does not ask again.
+  history.replaceState(null, '', location.pathname + location.search);
+  route();
+  let shared;
+  try {
+    shared = store.normalize(decodeShare(token));
+    if (!shared.lmp) throw new Error('Länken saknar sista mens');
+  } catch (err) {
+    toast(`Kunde inte läsa länken: ${err.message}`);
+    return;
+  }
+  const summary = `Sista mens ${formatShort(shared.lmp, { year: true })}` +
+    (shared.dueDateOverride ? `, BF enligt ultraljud ${formatShort(shared.dueDateOverride, { year: true })}` : '') +
+    `, ${shared.visits.length} besök.`;
+  const fresh = !data.lmp;
+  const ok = await confirmDialog(
+    fresh ? 'Lägg in delade uppgifter?' : 'Uppdatera med delade uppgifter?',
+    fresh ? summary : `${summary} Datumen ersätts och besöken läggs till bland dina egna.`,
+    fresh ? 'Lägg in' : 'Uppdatera',
+  );
+  if (!ok) return;
+  const { data: merged, added, updated } = mergeShared(data, shared);
+  data = merged;
+  commit();
+  go('idag');
+  toast(fresh ? 'Uppgifterna är inlagda' : `Uppdaterat: ${added} nya, ${updated} ändrade besök`);
+}
+
 // ---------- Reminders ----------
 
 function notificationsSupported() {
@@ -465,4 +533,4 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 if (data.lmp) store.mirror(data).then(checkReminders);
-route();
+if (!handleShareLink()) route();

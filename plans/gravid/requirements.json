@@ -201,6 +201,35 @@
           "text": "All text är på svenska och datum visas i svenskt format."
         }
       ]
+    },
+    {
+      "id": "BR-9",
+      "title": "Dela med partner",
+      "normative_strength": "should",
+      "statement": "Användaren kan dela sina datum och besök med sin partner via en länk, utan server. Uppgifterna ligger i länkens #-del.",
+      "verification_note": "Enhetstest av kodning och sammanslagning; e2e: dela från en telefon, öppna länken på en annan och se samma vecka och besök.",
+      "acceptance_criteria": [
+        {
+          "id": "BR-9-A",
+          "text": "\"Dela länk\" i Inställningar öppnar telefonens delningsmeny, eller kopierar länken om den saknas."
+        },
+        {
+          "id": "BR-9-B",
+          "given": "en telefon utan uppgifter",
+          "when": "en delad länk öppnas och användaren bekräftar",
+          "then": "läggs SM, ev. ultraljuds-BF och besöken in"
+        },
+        {
+          "id": "BR-9-C",
+          "given": "en telefon med egna uppgifter",
+          "when": "en delad länk öppnas och användaren bekräftar",
+          "then": "ersätts datumen och besöken slås ihop per id; egna besök finns kvar"
+        },
+        {
+          "id": "BR-9-D",
+          "text": "Uppgifterna skickas aldrig till någon server (de ligger i URL-fragmentet) och tas bort från adressfältet efter inläsning."
+        }
+      ]
     }
   ]
 }

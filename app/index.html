@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Due date</title>
+  <meta name="description" content="Se hur långt gången du är och när bebisen beräknas komma.">
+  <meta name="theme-color" content="#FFF8F5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Due date">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <nav class="tabbar" id="tabbar" hidden aria-label="Meny">
+    <a href="#/idag" data-tab="idag">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>
+      <span>Idag</span>
+    </a>
+    <a href="#/besok" data-tab="besok">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+      <span>Besök</span>
+    </a>
+    <a href="#/installningar" data-tab="installningar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>
+      <span>Inställningar</span>
+    </a>
+  </nav>
+
+  <dialog id="visit-dialog" class="sheet" aria-labelledby="visit-dialog-title">
+    <form id="visit-form" method="dialog" novalidate>
+      <h2 id="visit-dialog-title">Nytt besök</h2>
+      <label class="field">
+        <span>Typ</span>
+        <select name="type">
+          <option value="midwife">Barnmorska</option>
+          <option value="ultrasound">Ultraljud</option>
+          <option value="doctor">Läkare</option>
+          <option value="other">Annat</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Rubrik <em>(valfri)</em></span>
+        <input name="title" type="text" maxlength="80" placeholder="t.ex. Rutinultraljud" autocomplete="off">
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Datum</span>
+          <input name="date" type="date" required>
+          <small class="hint" id="visit-week"></small>
+          <small class="error" id="visit-date-error" role="alert"></small>
+        </label>
+        <label class="field">
+          <span>Tid <em>(valfri)</em></span>
+          <input name="time" type="time">
+        </label>
+      </div>
+      <label class="field">
+        <span>Plats <em>(valfri)</em></span>
+        <input name="place" type="text" maxlength="120" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Anteckning <em>(valfri)</em></span>
+        <textarea name="note" rows="2" maxlength="500" placeholder="Frågor att ta upp…"></textarea>
+      </label>
+      <button type="button" class="btn btn-soft" id="visit-ics">📆 Lägg till i kalendern</button>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" id="visit-cancel">Avbryt</button>
+        <button type="button" class="btn btn-danger-soft" id="visit-delete">Ta bort</button>
+        <button type="submit" class="btn btn-primary">Spara</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="sheet small" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div class="actions">
+        <button value="cancel" class="btn btn-ghost">Avbryt</button>
+        <button value="ok" class="btn btn-danger" id="confirm-ok"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

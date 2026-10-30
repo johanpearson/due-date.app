@@ -1,0 +1,91 @@
+{
+  "source": "brief",
+  "confirmed": false,
+  "note": "Utkast av Claude utifrån användarens brief i chatten 2026-10-30.",
+  "brief": "> Jag vill bygga en väldigt simpel pwa som körs på gh pages. Den ska vara till för att beräkna hur långt gången man är i sin graviditet. Användare ska bara behöva skriva in den sista mensens första dag och så räknas det ut korrekt. Också förväntat förlossningsdatum.\n> Kul om man kan lägga in olika datum för barnmorskatider, ultraljud osv.\n> Man ska bara behöva skriva in sina uppgifter en gång. Om notiser är möjligt är det bra annars skippa det. Ljust simpelt mjukt UX. Använd reqplan för att göra upp din plan.",
+  "requirements": [
+    {
+      "id": "BR-1", "title": "Ange sista mens (SM)", "normative_strength": "must",
+      "statement": "Användaren anger första dagen i sista menstruationen (SM) som enda obligatoriska uppgift. Datum i framtiden eller mer än 44 veckor bakåt avvisas.",
+      "verification_note": "Manuellt/e2e: öppna appen första gången, välj ett datum och spara; testa också ett framtida datum och se felmeddelandet.",
+      "acceptance_criteria": [
+        { "id": "BR-1-A", "given": "appen öppnas för första gången", "when": "sidan laddas", "then": "visas en välkomstvy med ett datumfält för SM och knappen Spara" },
+        { "id": "BR-1-B", "given": "användaren väljer ett datum i framtiden", "when": "användaren trycker Spara", "then": "visas felet \"Datumet kan inte ligga i framtiden\" och inget sparas" },
+        { "id": "BR-1-C", "given": "användaren väljer ett datum mer än 44 veckor bakåt", "when": "användaren trycker Spara", "then": "visas felet \"Datumet ligger för långt bak\" och inget sparas" }
+      ]
+    },
+    {
+      "id": "BR-2", "title": "Graviditetslängd idag", "normative_strength": "must",
+      "statement": "Appen visar hur långt gången användaren är idag i formatet vecka+dag (t.ex. 23+4), räknat som antal hela dagar från SM, samt trimester och en framstegsindikator mot 40+0.",
+      "verification_note": "Enhetstest av beräkningen med kända datum (inkl. skottår och sommartid); manuellt: kontrollera att visningen uppdateras vid nytt dygn.",
+      "acceptance_criteria": [
+        { "id": "BR-2-A", "given": "SM = 2026-05-10 och idag = 2026-10-30", "when": "startvyn visas", "then": "visas 24+5" },
+        { "id": "BR-2-B", "text": "Trimester visas: 1:a t.o.m. 13+6, 2:a 14+0–27+6, 3:e från 28+0." },
+        { "id": "BR-2-C", "text": "Beräkningen använder lokala kalenderdatum så att tidszon och sommartid inte ger fel dag." }
+      ]
+    },
+    {
+      "id": "BR-3", "title": "Beräknat förlossningsdatum (BF)", "normative_strength": "must",
+      "statement": "Appen visar beräknat förlossningsdatum = SM + 280 dagar och antal dagar kvar.",
+      "verification_note": "Enhetstest: SM 2026-05-10 ger BF 2027-02-14; manuellt: läs av BF och dagar kvar på startvyn.",
+      "acceptance_criteria": [
+        { "id": "BR-3-A", "given": "SM = 2026-05-10", "when": "startvyn visas", "then": "visas BF söndag 14 februari 2027" },
+        { "id": "BR-3-B", "given": "idag = 2026-10-30 och BF = 2027-02-14", "when": "startvyn visas", "then": "visas \"107 dagar kvar\"" },
+        { "id": "BR-3-C", "given": "BF har passerats", "when": "startvyn visas", "then": "visas \"x dagar över BF\" i stället för dagar kvar" }
+      ]
+    },
+    {
+      "id": "BR-4", "title": "Besök och datum", "normative_strength": "should",
+      "statement": "Användaren kan lägga till, ändra och ta bort besök (barnmorska, ultraljud, läkare, annat) med datum, valfri tid, plats och anteckning. Besöken listas i datumordning med graviditetsvecka för respektive datum.",
+      "verification_note": "E2e: lägg till ett ultraljud, se det i listan med rätt vecka, ändra tiden, ta bort det.",
+      "acceptance_criteria": [
+        { "id": "BR-4-A", "given": "användaren fyller i typ och datum", "when": "användaren trycker Spara", "then": "visas besöket i listan Kommande sorterat på datum" },
+        { "id": "BR-4-B", "text": "Varje besök visar graviditetsveckan på besöksdagen, t.ex. \"Ultraljud · v 18+2\"." },
+        { "id": "BR-4-C", "text": "Passerade besök flyttas till en hopfälld lista Tidigare." },
+        { "id": "BR-4-D", "text": "Ett besök kan ändras och tas bort (med bekräftelse)." },
+        { "id": "BR-4-E", "text": "Nästa kommande besök visas på startvyn." }
+      ]
+    },
+    {
+      "id": "BR-5", "title": "Skriv in en gång – sparas lokalt", "normative_strength": "must",
+      "statement": "Alla uppgifter sparas lokalt på enheten (inget konto, ingen server) och finns kvar nästa gång appen öppnas. Uppgifterna kan ändras eller raderas i Inställningar.",
+      "verification_note": "Manuellt: spara SM, stäng och öppna appen igen – startvyn visas direkt. Radera allt i Inställningar – välkomstvyn visas.",
+      "acceptance_criteria": [
+        { "id": "BR-5-A", "given": "SM är sparad", "when": "appen öppnas igen", "then": "visas startvyn direkt utan att fråga efter SM" },
+        { "id": "BR-5-B", "text": "SM kan ändras i Inställningar." },
+        { "id": "BR-5-C", "text": "\"Radera alla uppgifter\" tar bort all data efter bekräftelse." },
+        { "id": "BR-5-D", "text": "Inga uppgifter skickas från enheten." }
+      ]
+    },
+    {
+      "id": "BR-6", "title": "PWA på GitHub Pages", "normative_strength": "must",
+      "statement": "Appen är en statisk PWA som publiceras på GitHub Pages, kan installeras på hemskärmen och fungerar offline.",
+      "verification_note": "Lighthouse PWA-kontroll; manuellt: installera på mobil, slå på flygläge och öppna appen.",
+      "acceptance_criteria": [
+        { "id": "BR-6-A", "text": "En push till main publicerar appen på GitHub Pages automatiskt." },
+        { "id": "BR-6-B", "text": "Appen har web app manifest och ikoner och kan läggas till på hemskärmen (Android och iOS)." },
+        { "id": "BR-6-C", "text": "Efter första besöket fungerar appen helt offline (service worker)." }
+      ]
+    },
+    {
+      "id": "BR-7", "title": "Påminnelser (om möjligt)", "normative_strength": "may",
+      "statement": "Användaren kan bli påmind om kommande besök, i den mån plattformen tillåter utan server.",
+      "verification_note": "Manuellt: lägg till besök, exportera till kalendern och se påminnelsen; på Android: slå på notiser och se notisen dagen innan.",
+      "acceptance_criteria": [
+        { "id": "BR-7-A", "text": "Ett besök kan läggas till i telefonens kalender (.ics) med påminnelse dagen innan – fungerar på alla plattformar." },
+        { "id": "BR-7-B", "text": "Där webbnotiser stöds kan användaren slå på dem; en notis visas för besök nästa dag när appen öppnas eller synkar i bakgrunden." },
+        { "id": "BR-7-C", "text": "Om notiser inte stöds döljs reglaget och en förklaring visas." }
+      ]
+    },
+    {
+      "id": "BR-8", "title": "Ljust, simpelt och mjukt", "normative_strength": "must",
+      "statement": "Gränssnittet är på svenska, mobilanpassat, ljust med mjuka färger och rundade former, och läsbart (WCAG AA-kontrast).",
+      "verification_note": "Manuellt på 360 px bred skärm; kontrastkontroll med reqplan/axe.",
+      "acceptance_criteria": [
+        { "id": "BR-8-A", "text": "Ljus pastellpalett, rundade kort, stora tryckytor (minst 44 px)." },
+        { "id": "BR-8-B", "text": "All text når WCAG AA-kontrast 4.5:1." },
+        { "id": "BR-8-C", "text": "All text är på svenska och datum visas i svenskt format." }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 // Offline cache for the app shell, plus best-effort visit reminders.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL = `due-date-shell-${VERSION}`;
 const DATA = 'due-date-data';
 const FILES = [

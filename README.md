@@ -1,6 +1,6 @@
 # Due date
 
-En enkel PWA som visar hur långt gången du är i graviditeten (vecka+dag), trimester och beräknat förlossningsdatum (BF = sista mens + 280 dagar, eller BF enligt ultraljud). Barnmorsketider, ultraljud och andra besök kan läggas in, med graviditetsvecka för varje besök och kalenderfil med påminnelse dagen innan.
+En enkel PWA som visar hur långt gången du är i graviditeten (vecka+dag), trimester och beräknat förlossningsdatum (BF = sista mens + 280 dagar, eller BF enligt ultraljud). En kalender visar tydligt vilken graviditetsvecka varje dag hör till, även framåt i tiden. Barnmorsketider, ultraljud och andra besök kan läggas in, med graviditetsvecka för varje besök och kalenderfil med påminnelse dagen innan.
 
 Allt sparas lokalt på enheten (`localStorage`). Inget konto och ingen server.
 

@@ -107,3 +107,17 @@ test('date helpers', () => {
   assert.equal(isIsoDate('2026-02-30'), false);
   assert.equal(isIsoDate('2026-02-28'), true);
 });
+
+test('month grid is whole Monday-first weeks', async () => {
+  const { monthGrid, monthTitle, weekdayName } = await import('../app/calc.js');
+  const nov = monthGrid(2026, 10); // 1 Nov 2026 is a Sunday
+  assert.equal(nov[0], '2026-10-26');
+  assert.equal(nov.at(-1), '2026-12-06');
+  assert.equal(nov.length, 42);
+  const feb = monthGrid(2027, 1); // 1 Feb 2027 is a Monday, 28 Feb a Sunday
+  assert.equal(feb[0], '2027-02-01');
+  assert.equal(feb.at(-1), '2027-02-28');
+  assert.equal(feb.length, 28);
+  assert.equal(monthTitle(2026, 10), 'november 2026');
+  assert.equal(weekdayName('2026-05-10'), 'söndag');
+});

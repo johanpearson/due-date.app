@@ -160,3 +160,26 @@ export function visitToIcs(v, stamp = new Date()) {
   );
   return lines.join('\r\n') + '\r\n';
 }
+
+// Month view, Monday first: ISO dates for whole weeks covering the month (month is 0-11).
+export function monthGrid(year, month) {
+  const first = Date.UTC(year, month, 1) / DAY_MS;
+  const last = Date.UTC(year, month + 1, 0) / DAY_MS;
+  const mondayOffset = (new Date(first * DAY_MS).getUTCDay() + 6) % 7;
+  const start = first - mondayOffset;
+  const end = last + ((7 - ((new Date(last * DAY_MS).getUTCDay() + 6) % 7) - 1) % 7);
+  const days = [];
+  for (let d = start; d <= end; d++) days.push(toIso(d));
+  return days;
+}
+
+export function monthTitle(year, month) {
+  return `${MONTHS[month]} ${year}`;
+}
+
+export function weekdayName(iso) {
+  return WEEKDAYS[new Date(toDay(iso) * DAY_MS).getUTCDay()];
+}
+
+// The calendar shows pregnancy weeks up to 42+0.
+export const CALENDAR_DAYS = 42 * 7;

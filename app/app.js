@@ -2,6 +2,7 @@ import {
   todayIso, startDate, dueDate, gestationOn, trimester, progressPercent,
   validateLmp, validateDueDateOverride, formatLong, formatShort, daysLeftText,
   VISIT_TYPES, visitTitle, splitVisits, visitToIcs,
+  toDay, addDays, monthGrid, monthTitle, weekdayName, CALENDAR_DAYS,
 } from './calc.js';
 import * as store from './store.js';
 import { SHARE_PREFIX, shareUrl, decodeShare, mergeShared } from './share.js';
@@ -19,7 +20,7 @@ function commit() {
 
 // ---------- Routing ----------
 
-const routes = { idag: renderHome, besok: renderVisits, installningar: renderSettings };
+const routes = { idag: renderHome, kalender: renderCalendar, besok: renderVisits, installningar: renderSettings };
 
 function route() {
   if (!data.lmp) {
@@ -177,6 +178,133 @@ function bindVisitItems() {
   }
 }
 
+// ---------- Calendar ----------
+
+// The month shown and the selected day survive switching tabs.
+let calMonth = null; // { year, month }
+let calSelected = null;
+
+function renderCalendar() {
+  const today = todayIso();
+  const start = startDate(data);
+  const due = dueDate(data);
+  const lastDay = addDays(start, CALENDAR_DAYS);
+  if (!calSelected) calSelected = today;
+  if (!calMonth) calMonth = monthOf(calSelected);
+  const { year, month } = calMonth;
+  const minMonth = monthOf(start);
+  const maxMonth = monthOf(lastDay);
+  const canPrev = year * 12 + month > minMonth.year * 12 + minMonth.month;
+  const canNext = year * 12 + month < maxMonth.year * 12 + maxMonth.month;
+  const visitsByDate = new Map();
+  for (const v of data.visits) {
+    if (!visitsByDate.has(v.date)) visitsByDate.set(v.date, []);
+    visitsByDate.get(v.date).push(v);
+  }
+
+  const cells = monthGrid(year, month).map((iso, i) => {
+    const g = iso <= lastDay ? gestationOn(start, iso) : null;
+    const inMonth = iso.slice(0, 7) === isoOf(year, month, 1).slice(0, 7);
+    const cls = ['day'];
+    if (!inMonth) cls.push('outside');
+    if (g) cls.push(g.weeks % 2 ? 'tint-b' : 'tint-a');
+    // A week band starts on its first day and again at the start of each row.
+    const bandStart = g && (g.extraDays === 0 || i % 7 === 0);
+    if (g && g.extraDays === 0) cls.push('week-start');
+    if (iso === today) cls.push('today');
+    if (iso === calSelected) cls.push('selected');
+    if (iso === due) cls.push('due');
+    const tag = iso === due ? 'BF' : bandStart ? `v${g.weeks}` : '';
+    const visits = visitsByDate.get(iso) || [];
+    const label = `${formatLong(iso)}${g ? `, vecka ${g.label}` : ''}${iso === due ? ', beräknat förlossningsdatum' : ''}${visits.length ? `, ${visits.length} besök` : ''}`;
+    return `
+      <button class="${cls.join(' ')}" data-date="${iso}" aria-label="${esc(label)}" ${iso === calSelected ? 'aria-pressed="true"' : ''}>
+        <span class="tag">${tag}</span>
+        <span class="num">${Number(iso.slice(8))}</span>
+        <span class="dots">${visits.slice(0, 3).map((v) => `<i class="dot dot-${esc(v.type)}"></i>`).join('')}</span>
+      </button>`;
+  }).join('');
+
+  view.innerHTML = `
+    <h1 class="page-title">Kalender</h1>
+    <div class="cal-head">
+      <button class="icon-btn" id="cal-prev" aria-label="Föregående månad" ${canPrev ? '' : 'disabled'}>‹</button>
+      <h2 class="cal-title" aria-live="polite">${esc(capitalize(monthTitle(year, month)))}</h2>
+      <button class="icon-btn" id="cal-next" aria-label="Nästa månad" ${canNext ? '' : 'disabled'}>›</button>
+    </div>
+    <div class="cal" id="cal">
+      ${['mån', 'tis', 'ons', 'tor', 'fre', 'lör', 'sön'].map((d) => `<span class="wd">${d}</span>`).join('')}
+      ${cells}
+    </div>
+    <p class="cal-legend">Varje färgfält är en graviditetsvecka. Dina veckor börjar på ${esc(weekdayName(start))}ar.
+      ${calSelected !== today ? '<button class="link-btn" id="cal-today">Till idag</button>' : ''}</p>
+    ${dayDetail(calSelected, start, due, lastDay, visitsByDate.get(calSelected) || [])}`;
+
+  view.querySelector('#cal-prev').addEventListener('click', () => shiftMonth(-1));
+  view.querySelector('#cal-next').addEventListener('click', () => shiftMonth(1));
+  view.querySelector('#cal-today')?.addEventListener('click', () => {
+    calSelected = todayIso();
+    calMonth = monthOf(calSelected);
+    renderCalendar();
+  });
+  for (const b of view.querySelectorAll('.day')) {
+    b.addEventListener('click', () => {
+      calSelected = b.dataset.date;
+      calMonth = monthOf(calSelected);
+      renderCalendar();
+    });
+  }
+  view.querySelector('#cal-add').addEventListener('click', () => openVisit(null, calSelected));
+  bindVisitItems();
+
+  // Swipe between months.
+  const cal = view.querySelector('#cal');
+  let x0 = null;
+  cal.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  cal.addEventListener('touchend', (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) < 50) return;
+    if (dx < 0 && canNext) shiftMonth(1);
+    if (dx > 0 && canPrev) shiftMonth(-1);
+  });
+}
+
+function dayDetail(iso, start, due, lastDay, visits) {
+  const g = iso <= lastDay ? gestationOn(start, iso) : null;
+  const left = toDay(due) - toDay(iso);
+  let info;
+  if (!g) info = `<p class="muted">${iso < start ? 'Före graviditeten.' : 'Efter 42+0.'}</p>`;
+  else {
+    info = `
+      <p class="detail-week"><strong>${g.label}</strong> <span>vecka + dag</span></p>
+      <p class="muted">${trimester(g.days)}:${trimester(g.days) === 3 ? 'e' : 'a'} trimestern · ${
+        left > 0 ? `${left} ${left === 1 ? 'dag' : 'dagar'} kvar till BF` : left === 0 ? 'Beräknat förlossningsdatum 💗' : `${-left} ${left === -1 ? 'dag' : 'dagar'} efter BF`}</p>`;
+  }
+  return `
+    <section class="card day-detail">
+      <p class="card-label">${esc(capitalize(formatLong(iso)))} ${iso.slice(0, 4)}</p>
+      ${info}
+      ${visits.length ? `<ul class="list">${visits.map((v) => visitItem(v, start)).join('')}</ul>` : ''}
+      <button class="btn btn-soft btn-block" id="cal-add">+ Lägg till besök den här dagen</button>
+    </section>`;
+}
+
+function shiftMonth(delta) {
+  const m = calMonth.year * 12 + calMonth.month + delta;
+  calMonth = { year: Math.floor(m / 12), month: m % 12 };
+  renderCalendar();
+}
+
+function monthOf(iso) {
+  return { year: Number(iso.slice(0, 4)), month: Number(iso.slice(5, 7)) - 1 };
+}
+
+function isoOf(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 function renderSettings() {
   const today = todayIso();
   const notifySupport = notificationsSupported();
@@ -271,13 +399,13 @@ const visitDialog = document.getElementById('visit-dialog');
 const visitForm = document.getElementById('visit-form');
 let editingId = null;
 
-function openVisit(visit) {
+function openVisit(visit, date) {
   editingId = visit ? visit.id : null;
   visitForm.reset();
   document.getElementById('visit-dialog-title').textContent = visit ? 'Ändra besök' : 'Nytt besök';
   visitForm.type.value = visit?.type || 'midwife';
   visitForm.title.value = visit?.title || '';
-  visitForm.date.value = visit?.date || todayIso();
+  visitForm.date.value = visit?.date || date || todayIso();
   visitForm.time.value = visit?.time || '';
   visitForm.place.value = visit?.place || '';
   visitForm.note.value = visit?.note || '';

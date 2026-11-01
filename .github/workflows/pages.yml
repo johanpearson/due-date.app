@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - name: Stamp service worker version
+        run: sed -i "s/^const VERSION = 'dev';/const VERSION = '${GITHUB_SHA::7}';/" app/sw.js && grep -q "^const VERSION = '${GITHUB_SHA::7}';" app/sw.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

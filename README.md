@@ -24,7 +24,7 @@ npm test
 
 ## Publicering
 
-`.github/workflows/pages.yml` kör testerna och publicerar `app/` vid push till `main`.
+`.github/workflows/pages.yml` kör testerna och publicerar `app/` vid push till `main`. Den stämplar in commit-id som `VERSION` i `sw.js`, så varje publicering blir en ny version som appen hämtar i bakgrunden och laddar om sig till automatiskt (efter att en öppen dialog stängts).
 Första gången: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
 ## Påminnelser

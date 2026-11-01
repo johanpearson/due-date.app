@@ -59,6 +59,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     refreshIfNewDay();
     checkReminders();
+    checkForUpdate();
   }
 });
 setInterval(refreshIfNewDay, 60 * 1000);
@@ -657,7 +658,32 @@ function capitalize(s) {
 
 // ---------- Start ----------
 
+// ---------- Updates ----------
+
+// A new version installs in the background and takes over (skipWaiting +
+// clients.claim in sw.js). Reload then, but not on the very first install and
+// not while a dialog is open, so nothing being typed is lost.
+let reloading = false;
+function reloadForUpdate() {
+  if (reloading) return;
+  const open = document.querySelector('dialog[open]');
+  if (open) {
+    open.addEventListener('close', reloadForUpdate, { once: true });
+    return;
+  }
+  reloading = true;
+  location.reload();
+}
+
+function checkForUpdate() {
+  navigator.serviceWorker?.getRegistration().then((reg) => reg?.update()).catch(() => {});
+}
+
 if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) reloadForUpdate();
+  });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 if (data.lmp) store.mirror(data).then(checkReminders);

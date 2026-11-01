@@ -1543,9 +1543,9 @@
     {
       "id": "R-stale",
       "risk": "Gammal version fastnar i service worker-cachen.",
-      "likelihood": "medium",
+      "likelihood": "low",
       "impact": "low",
-      "mitigation": "Versionerad cache-nyckel och uppdatering vid nästa start."
+      "mitigation": "Publiceringen stämplar in commit-id som VERSION i sw.js, så varje release är en ny service worker. Den hämtar filerna förbi HTTP-cachen, tar över direkt (skipWaiting + clients.claim) och appen laddar om sig själv vid controllerchange – men väntar tills en öppen dialog stängts. Uppdatering kontrolleras också när appen kommer i förgrunden."
     }
   ],
   "milestones": [

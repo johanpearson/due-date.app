@@ -230,6 +230,35 @@
           "text": "Uppgifterna skickas aldrig till någon server (de ligger i URL-fragmentet) och tas bort från adressfältet efter inläsning."
         }
       ]
+    },
+    {
+      "id": "BR-10",
+      "title": "Kalender med graviditetsveckor",
+      "normative_strength": "should",
+      "statement": "En kalenderflik visar månader från SM till 42+0 där det tydligt syns vilken graviditetsvecka varje dag tillhör, även framåt i tiden, tillsammans med besök och BF.",
+      "verification_note": "E2e: öppna Kalender, bläddra framåt till BF-månaden och tryck på dagar; jämför veckan med enhetstestade beräkningar.",
+      "acceptance_criteria": [
+        {
+          "id": "BR-10-A",
+          "text": "Varje graviditetsvecka är ett eget färgfält (växlande färger) med etiketten \"v25\" i början av fältet på varje rad."
+        },
+        {
+          "id": "BR-10-B",
+          "text": "Trycker man på en dag visas datum, vecka+dag, trimester, dagar kvar till BF och dagens besök."
+        },
+        {
+          "id": "BR-10-C",
+          "text": "Besök visas som prickar; BF är markerat; idag har en ring."
+        },
+        {
+          "id": "BR-10-D",
+          "text": "Man bläddrar mellan månader med pilar eller svep, från SM-månaden till månaden för 42+0."
+        },
+        {
+          "id": "BR-10-E",
+          "text": "\"Lägg till besök den här dagen\" öppnar besöksdialogen med det valda datumet."
+        }
+      ]
     }
   ]
 }

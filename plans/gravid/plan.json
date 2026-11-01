@@ -84,6 +84,10 @@
       "goto": "home"
     },
     {
+      "label": "Kalender",
+      "goto": "calendar"
+    },
+    {
       "label": "Besök",
       "goto": "visits"
     },
@@ -391,6 +395,154 @@
                     "BR-3-C"
                   ]
                 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "calendar",
+      "title": "Kalender",
+      "group": "Kalender",
+      "satisfies": [
+        "BR-10"
+      ],
+      "description": "Månadsvy (måndag först). Varje graviditetsvecka är ett färgfält med växlande rosa/lila; etiketten \"vNN\" står där fältet börjar och i början av varje rad. Exempel: SM söndag 10 maj → veckorna börjar på söndagar.",
+      "elements": [
+        {
+          "type": "row",
+          "elements": [
+            {
+              "id": "prev",
+              "type": "button",
+              "label": "‹",
+              "variant": "secondary",
+              "satisfies": [
+                "BR-10-D"
+              ]
+            },
+            {
+              "type": "heading",
+              "level": 2,
+              "text": "November 2026"
+            },
+            {
+              "id": "next",
+              "type": "button",
+              "label": "›",
+              "variant": "secondary",
+              "satisfies": [
+                "BR-10-D"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "grid",
+          "type": "table",
+          "title": "Graviditetsveckor som färgfält",
+          "satisfies": [
+            "BR-10-A",
+            "BR-10-C"
+          ],
+          "columns": [
+            "mån",
+            "tis",
+            "ons",
+            "tor",
+            "fre",
+            "lör",
+            "sön"
+          ],
+          "rows": [
+            [
+              "v24 · 26",
+              "27",
+              "28",
+              "29",
+              "30",
+              "31",
+              "v25 · ①"
+            ],
+            [
+              "v25 · 2",
+              "3 •",
+              "4",
+              "5",
+              "6",
+              "7",
+              "v26 · 8"
+            ],
+            [
+              "v26 · 9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "v27 · 15"
+            ],
+            [
+              "v27 · 16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "v28 · 22"
+            ],
+            [
+              "v28 · 23 ••",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "v29 · 29"
+            ]
+          ]
+        },
+        {
+          "type": "text",
+          "text": "Varje färgfält är en graviditetsvecka. Dina veckor börjar på söndagar."
+        },
+        {
+          "id": "detail",
+          "type": "card",
+          "title": "Måndag 23 november 2026",
+          "satisfies": [
+            "BR-10-B"
+          ],
+          "elements": [
+            {
+              "type": "stat",
+              "label": "vecka + dag",
+              "value": "28+1"
+            },
+            {
+              "type": "text",
+              "text": "3:e trimestern · 83 dagar kvar till BF"
+            },
+            {
+              "type": "list",
+              "items": [
+                {
+                  "title": "Glukosbelastning",
+                  "subtitle": "mån 23 nov 08:00",
+                  "meta": "v 28+1",
+                  "goto": "visit-edit"
+                }
+              ]
+            },
+            {
+              "id": "add",
+              "type": "button",
+              "label": "+ Lägg till besök den här dagen",
+              "variant": "secondary",
+              "opens": "visit-edit",
+              "satisfies": [
+                "BR-10-E"
               ]
             }
           ]
@@ -1285,6 +1437,38 @@
       "satisfies": [
         "BR-9"
       ]
+    },
+    {
+      "id": "D-calendar",
+      "title": "Hur veckorna visas i kalendern",
+      "status": "accepted",
+      "context": "Graviditetsveckor börjar på SM:s veckodag, medan svenska kalendrar börjar på måndag.",
+      "options": [
+        {
+          "name": "Måndagsrader med färgfält per graviditetsvecka",
+          "pros": [
+            "Vanlig kalender",
+            "Veckorna syns som block"
+          ],
+          "cons": [
+            "En graviditetsvecka delas över två rader"
+          ]
+        },
+        {
+          "name": "Rader som börjar på SM:s veckodag",
+          "pros": [
+            "En rad = en graviditetsvecka"
+          ],
+          "cons": [
+            "Ovan kalender"
+          ]
+        }
+      ],
+      "chosen": "Måndagsrader med färgfält per graviditetsvecka",
+      "rationale": "Etiketten upprepas i början av varje rad så att delade veckor ändå är tydliga.",
+      "satisfies": [
+        "BR-10-A"
+      ]
     }
   ],
   "open_questions": [
@@ -1406,6 +1590,14 @@
         "receive-share",
         "share"
       ]
+    },
+    {
+      "id": "m5",
+      "title": "Kalender",
+      "target": "Steg 5",
+      "includes": [
+        "calendar"
+      ]
     }
   ],
   "verification": [
@@ -1519,6 +1711,21 @@
         "BR-9-B",
         "BR-9-C",
         "BR-9-D"
+      ]
+    },
+    {
+      "id": "V-calendar",
+      "title": "Kalender",
+      "type": "e2e",
+      "given": "SM 2026-05-10, idag 2026-11-01",
+      "when": "Kalender öppnas, 23 nov väljs, man bläddrar till februari 2027",
+      "then": "23 nov visar 28+1 och två besök; 14 feb märkt BF med 40+0; nästa-pilen är avstängd i februari (42+0 = 28 feb); \"Lägg till besök den här dagen\" förifyller datumet",
+      "satisfies": [
+        "BR-10-A",
+        "BR-10-B",
+        "BR-10-C",
+        "BR-10-D",
+        "BR-10-E"
       ]
     }
   ]

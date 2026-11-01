@@ -1,5 +1,7 @@
 // Offline cache for the app shell, plus best-effort visit reminders.
-const VERSION = 'v3';
+// The deploy workflow replaces VERSION with the commit id, so every release
+// changes this file and the browser installs it as a new version.
+const VERSION = 'dev';
 const SHELL = `due-date-shell-${VERSION}`;
 const DATA = 'due-date-data';
 const FILES = [
@@ -19,7 +21,9 @@ const FILES = [
 const TYPE_NAMES = { midwife: 'Barnmorska', ultrasound: 'Ultraljud', doctor: 'Läkare', other: 'Besök' };
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // Bypass the HTTP cache so a new version never caches old files.
+  const requests = FILES.map((f) => new Request(f, { cache: 'reload' }));
+  event.waitUntil(caches.open(SHELL).then((c) => c.addAll(requests)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
